@@ -1,4 +1,5 @@
 import requests
+import random
 from lxml.html import fromstring
 from NFTradeMonitor.Script.Domain.Proxy import Proxy
 
@@ -11,6 +12,10 @@ class ProxyCatalog:
     @property
     def proxyList(self):
         return self.__proxyList
+
+    def get_proxy(self):
+        n = random.randint(0, len(self.__proxyList) - 1)
+        return {"http": f"https://{self.__proxyList[n]}"}
 
     def update_proxy_list(self):
 
@@ -32,9 +37,9 @@ class ProxyCatalog:
         response = requests.get(url)
         parser = fromstring(response.text)
         for i in parser.xpath('//tbody/tr')[:45]:
-            if i.xpath('.//td[7][contains(text(),"yes")]'):
+            if i.xpath('.//td[5][contains(text(),"elite proxy")]') or i.xpath('.//td[5][contains(text(),"anonymous")]'):
                 # Grabbing IP and corresponding PORT
-                proxyStr = ":".join([i.xpath('.//td[1]/text()')[0], i.xpath('.//td[2]/text()')[0]])
+                #proxyStr = ":".join([i.xpath('.//td[1]/text()')[0], i.xpath('.//td[2]/text()')[0]])
                 proxy = Proxy(i.xpath('.//td[1]/text()')[0], i.xpath('.//td[2]/text()')[0])
                 self.__proxyList.append(proxy)
 

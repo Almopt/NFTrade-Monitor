@@ -1,5 +1,9 @@
 import datetime
 import json
+
+import datetime
+
+import datetime as datetime
 import requests
 
 from NFTradeMonitor.Script.DB.Schemas.NFT import NFT
@@ -46,29 +50,23 @@ class ScrapDataHandler:
         """
 
         # Get the most Recent Listed NFT in Data Base
-        current_date = datetime.date.today()  # Current Date
-        try:
-            items = (NFT.select().where(NFT.updatedAtDate == current_date).order_by(NFT.updatedAtHour.desc()))  # Get all NFTs of the current date
-        except Exception as e:
-            print(f"Exception found '{e}'")
-
-        for nft in items:
-            print(nft.updatedAtHour)
+        items = (NFT.select().order_by(NFT.updatedAtDate.desc(), NFT.updatedAtHour.desc()).limit(10))  # Get all NFTs of the current date
 
         # Table NFTs is empty
         if len(items) == 0:
             print('Table NFTs is Empty - Prepare to load Data')
-            self.__populateTables(data)
+            self.__populate_tables(data)
             print('NFTs were loaded in Data Base.')
         else:  # Table NFTs have already some data
-            print(f'Table NFTs have {len(items)} rows')
             if (len(data) - len(items)) == 0:
                 print(f'There are no new data to add.')
             else:
-                print(f'Prepare to load {len(data) - len(items)} new Items')
-                items_to_add = self.__compare_items_to_add(data, items[0])
+                print(f'Validating {len(data) - len(items)} New Items')
+                new_data = self.__compare_items_to_add(data, items[0])
+                print(f'{len(new_data)} New Items will be store in DB.')
+                self.__populate_tables_new_items(new_data)
 
-    def __populateTables(self, data):
+    def __populate_tables(self, data):
         session = requests.session()
         header = self.__userAgent.get_random_user_agent()
         proxy = self.__proxyCatalog.get_proxy()
@@ -85,8 +83,8 @@ class ScrapDataHandler:
                 if item_rarity not in populations_list:
                     populations_list.append(item_rarity)
                 else:
-                    print(f'A raridade {item_rarity} esta repetida')
-
+                    print(f'The rarity {item_rarity} is repeated.')
+                                                  
                 items.append(self.__get_item_to_populate(item, attributes, item_rarity))
 
         for rarity in populations_list:
@@ -95,14 +93,86 @@ class ScrapDataHandler:
         self.__load_polutations(populations_list_dic)
         self.__load_items(items)
 
-        print("tewste")
+    def __populate_tables_new_items(self, data):
+        session = requests.session()
+        header = self.__userAgent.get_random_user_agent()
+        proxy = self.__proxyCatalog.get_proxy()
+        populations_list = []
+        populations_list_dic = []
+        items = []
 
+        for item in data:
+            r = session.get(item['tokenURI'], headers=header, proxies=proxy, verify=False, timeout=100)
+            attributes = json.loads(r.text)  # Transform json into text
+
+            if 'initialProbabilities' in attributes:
+                item_rarity = round(self.__calculate_rarity(attributes['initialProbabilities']), 5)
+                if item_rarity not in populations_list:
+                    populations_list.append(item_rarity)
+                else:
+                    print(f'The rarity {item_rarity} is repeated on New Items.')
+
+                items.append(self.__get_item_to_populate(item, attributes, item_rarity))
+
+        populations_list_with_no_duplicates = self.__compare_item_rarity_with_db(populations_list)
+
+        for rarity in populations_list_with_no_duplicates:
+            populations_list_dic.append({'rarity': rarity})
+
+
+
+    def __compare_item_rarity_with_db(self, rarities):
+        rarities_to_persist = []
+        population_list = Population.select().dicts()
+
+        for rarity in rarities:
+            equal_rarities = 0
+            for population in population_list:
+                if rarity in population.values():
+                    equal_rarities += 1
+                    break
+            if equal_rarities == 0:
+                rarities_to_persist.append(rarity)
+                
+        return rarities_to_persist
 
     def __compare_items_to_add(self, data, item_to_compare):
-        return []
 
-    def __prepare_data_to_load_in_db(self, data):
-        pass
+        """
+        This function filters the data from NFTrade API
+        :param data: All items from NFTrade API
+        :param item_to_compare: Last item stored in DB
+        :return: List of all items that are not yet on DB
+        """
+
+        items_to_persist = []
+        for item in data:
+            if self.__compare_date_time(item['updatedAt'], item_to_compare.updatedAtDate,
+                                        item_to_compare.updatedAtHour):
+                items_to_persist.append(item)
+            else:
+                break
+        return items_to_persist
+
+    def __compare_date_time(self, datetime_api, date_db, time_db):
+
+        """
+        This function is used to compare 2 dates
+        :param datetime_api: DateTime from Api ("2021-10-28T11:45:35.241Z")
+        :param date_db: Date from DB ("2021-10-28")
+        :param time_db: Time from DB ("11:45:35.241")
+        :return: True is the DateTime of the datetime_api is greater then the last item
+        stored in DB
+        """
+
+        comparator = False
+        datetime_aux = datetime.datetime.strptime(datetime_api, '%Y-%m-%dT%H:%M:%S.%fZ')
+        str_datetime_db = f'{date_db} {time_db}'
+        datetime_db_aux = datetime.datetime.strptime(str_datetime_db, '%Y-%m-%d %H:%M:%S.%f')
+        if datetime_aux > datetime_db_aux:
+            comparator = True
+
+        return comparator
 
     def __load_items(self, items):
 

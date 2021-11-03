@@ -1,4 +1,4 @@
-from datetime import time
+import time as t
 
 from NFTradeMonitor.Script.DB.Schemas.NFT import NFT
 from NFTradeMonitor.Script.DB.Schemas.Population import Population
@@ -38,13 +38,13 @@ class Monitor:
                 else:
                     print('###################### START SCRAP #########################')
 
-                scraper = ScrapDataHandler(self.CONFIG['URL'], self.__nftCatalog, self.__proxyCatalog, self.__userAgent)
+                scraper = ScrapDataHandler(self.CONFIG['URL'], self.__proxyCatalog, self.__userAgent)
                 scraper.scrap_data()
 
                 # User set delay
                 delay = float(self.CONFIG['DELAY'])
                 print(f'Sleeping for {delay} seconds...')
-                time.sleep(delay)
+                t.sleep(delay)
 
             except Exception as e:
                 print(f"Exception found '{e}'")

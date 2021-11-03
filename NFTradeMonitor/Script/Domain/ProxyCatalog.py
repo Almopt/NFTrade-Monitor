@@ -38,8 +38,11 @@ class ProxyCatalog:
         parser = fromstring(response.text)
         for i in parser.xpath('//tbody/tr')[:45]:
             if i.xpath('.//td[5][contains(text(),"elite proxy")]') or i.xpath('.//td[5][contains(text(),"anonymous")]'):
+                #if i.xpath('.//td[7][contains(text(),"no")]'):
                 # Grabbing IP and corresponding PORT
                 #proxyStr = ":".join([i.xpath('.//td[1]/text()')[0], i.xpath('.//td[2]/text()')[0]])
                 proxy = Proxy(i.xpath('.//td[1]/text()')[0], i.xpath('.//td[2]/text()')[0])
-                self.__proxyList.append(proxy)
+                #print(i.xpath('.//td[7]/text()')[0])
+                if len(self.__proxyList) < 21:
+                    self.__proxyList.append(proxy)
 

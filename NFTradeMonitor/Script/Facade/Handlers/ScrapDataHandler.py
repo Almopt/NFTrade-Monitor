@@ -64,7 +64,7 @@ class ScrapDataHandler:
 
             while len(self.__data_in_chunks) > 0:
                 if idx_while > 0:
-                    print(f'Sleeping for 10 minutes, in order to getting more proxies')
+                    print(f'Sleeping for 10 minutes, in order to get more proxies')
                     t.sleep(600)
 
                 self.__proxyCatalog.update_proxy_list()  # Proxy List will be updated
@@ -87,7 +87,7 @@ class ScrapDataHandler:
 
                 while len(self.__data_in_chunks) > 0:
                     if idx_while > 0:
-                        print(f'Sleeping for 10 minutes, in order to getting more proxies')
+                        print(f'Sleeping for 10 minutes, in order to get more proxies')
                         t.sleep(600)
 
                     self.__proxyCatalog.update_proxy_list()  # Proxy List will be updated
@@ -105,6 +105,8 @@ class ScrapDataHandler:
                         print(f'New Item/s doesnt have the required data')
             else:
                 print(f'No New Items to Add')
+
+        return self.__items
 
     async def __scrap_data(self):
         tasks = []
@@ -154,61 +156,6 @@ class ScrapDataHandler:
 
         self.__load_polutations(populations_list_dic, 10000)
         self.__load_items(10000)
-
-    # def __populate_tables(self, data):
-    #     session = requests.session()
-    #     header = self.__userAgent.get_random_user_agent()
-    #     proxy = self.__proxyCatalog.get_proxy()
-    #     populations_list = []
-    #     populations_list_dic = []
-    #     items = []
-    #
-    #     for item in data:
-    #         r = session.get(item['tokenURI'], headers=header, proxies=proxy, verify=False, timeout=100)
-    #         attributes = json.loads(r.text)  # Transform json into text
-    #
-    #         if 'initialProbabilities' in attributes:
-    #             item_rarity = round(self.__calculate_rarity(attributes['initialProbabilities']), 5)
-    #             if item_rarity not in populations_list:
-    #                 populations_list.append(item_rarity)
-    #             else:
-    #                 print(f'The rarity {item_rarity} is repeated.')
-    #
-    #             items.append(self.__get_item_to_populate(item, attributes, item_rarity))
-    #
-    #     for rarity in populations_list:
-    #         populations_list_dic.append({'rarity': rarity})
-    #
-    #     # self.__load_polutations(populations_list_dic)
-    #     # self.__load_items(items)
-
-    # def __populate_tables_new_items(self, data):
-    #     session = requests.session()
-    #     header = self.__userAgent.get_random_user_agent()
-    #     proxy = self.__proxyCatalog.get_proxy()
-    #     populations_list = []
-    #     populations_list_dic = []
-    #     items = []
-    #
-    #     for item in data:
-    #         r = session.get(item['tokenURI'], headers=header, proxies=proxy, verify=False, timeout=100)
-    #         attributes = json.loads(r.text)  # Transform json into text
-    #
-    #         if 'initialProbabilities' in attributes:
-    #             item_rarity = round(self.__calculate_rarity(attributes['initialProbabilities']), 5)
-    #             if item_rarity not in populations_list:
-    #                 populations_list.append(item_rarity)
-    #             else:
-    #                 print(f'The rarity {item_rarity} is repeated on New Items.')
-    #
-    #             items.append(self.__get_item_to_populate(item, attributes, item_rarity))
-    #
-    #     populations_list_with_no_duplicates = self.__compare_item_rarity_with_db(populations_list)
-    #
-    #     for rarity in populations_list_with_no_duplicates:
-    #         populations_list_dic.append({'rarity': rarity})
-
-
 
     def __compare_item_rarity_with_db(self, rarities):
         rarities_to_persist = []

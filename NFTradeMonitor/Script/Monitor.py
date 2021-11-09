@@ -8,6 +8,7 @@ from NFTradeMonitor.Script.Domain.ProxyCatalog import ProxyCatalog
 from NFTradeMonitor.Script.Domain.UserAgent4Scrap import UserAgent4Scrap
 import dotenv
 
+from NFTradeMonitor.Script.Facade.Handlers.CalculationsHandler import CalculationsHandler
 from NFTradeMonitor.Script.Facade.Handlers.ScrapDataHandler import ScrapDataHandler
 
 
@@ -23,9 +24,6 @@ class Monitor:
     def start(self):
         print('STARTING NFTRADE MONITOR')
 
-        # Ensures that first scrape does not notify all products
-        start = 1
-
         data_base.connect()  # Connect to data base
         #data_base.drop_tables([Population, NFT])  # Drop Tables
         data_base.create_tables([Population, NFT])  # Create Tables
@@ -33,13 +31,15 @@ class Monitor:
         while True:
             try:
 
-                if start == 0:
-                    print('###################### RELOAD SCRAP ########################')
-                else:
-                    print('###################### START SCRAP #########################')
+                print('###################### START SCRAP #########################')
 
                 scraper = ScrapDataHandler(self.CONFIG['URL'], self.__proxyCatalog, self.__userAgent)
-                scraper.scrap_data()
+                new_scrapped_items = scraper.scrap_data()
+
+                #calculator = CalculationsHandler()
+                #calculator.calculate_mean()
+                #items_to_send = calculator.get_items_to_send(new_scrapped_items)
+
 
                 # User set delay
                 delay = float(self.CONFIG['DELAY'])

@@ -36,8 +36,8 @@ class Monitor:
                 scraper = ScrapDataHandler(self.CONFIG['URL'], self.__proxyCatalog, self.__userAgent)
                 new_scrapped_items = scraper.scrap_data()
 
-                #calculator = CalculationsHandler()
-                #calculator.calculate_mean()
+                calculator = CalculationsHandler()
+                calculator.calculate_mean()
                 #items_to_send = calculator.get_items_to_send(new_scrapped_items)
 
 

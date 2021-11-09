@@ -9,7 +9,7 @@ To install the dependencies, navigate to the cloned directory (NFTradeMonitor Fo
 pip install -r requirements.txt
 ```
 # How to Run:
-To start running the monitor, navigate to the Script directory (NFTradeMonitor > Script) n Terminal or Command Prompt and use the command:
+To start running the monitor, navigate to the cloned directory (NFTradeMonitor Folder) in Terminal or Command Prompt and use the command:
 
 ```bash
 python run.py
